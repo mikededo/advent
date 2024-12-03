@@ -38,7 +38,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let response = client.get(url).headers(headers).send()?;
     if response.status().is_success() {
         // Write into the file
-        let path = format!("./{year}/src/data/d{date}.txt", date = args.date);
+        let path = format!(
+            "./aoc-{year}/src/data/d{date}.txt",
+            year = year % 100,
+            date = args.date
+        );
         let file_path = Path::new(&path);
         write(file_path, response.text()?)?;
         println!("Wrote to {}", file_path.display());
