@@ -123,18 +123,61 @@ fn count_xmas(c: &Vec<Vec<String>>, (x, y): (usize, usize)) -> usize {
 
 pub fn solve_a() {
     let res = read_chars("d4.txt");
-
-    res.iter().for_each(|row| {
-        row.iter().for_each(|c| {
-            print!("{c} ");
-        });
-        println!();
-    });
     let count = res.iter().enumerate().fold(0, |acc, (i, row)| {
         acc + row
             .iter()
             .enumerate()
             .fold(0, |acc, (j, _)| acc + count_xmas(&res, (j, i)))
+    });
+    println!("{:?}", count);
+}
+
+fn cell_matches(matrix: &[Vec<String>], (x, y): (usize, usize), expected: &str) -> bool {
+    get_cell(matrix, y, x).map_or(false, |cell| cell == expected)
+}
+
+fn check_case(
+    matrix: &[Vec<String>],
+    (x, y): (usize, usize),
+    [top_left, top_right, bottom_left, bottom_right]: [&str; 4],
+) -> bool {
+    cell_matches(matrix, (x - 1, y - 1), top_left)
+        && cell_matches(matrix, (x + 1, y - 1), top_right)
+        && cell_matches(matrix, (x - 1, y + 1), bottom_left)
+        && cell_matches(matrix, (x + 1, y + 1), bottom_right)
+}
+
+// Possible cases
+// 1.    2.    3.    4.
+// M.M   S.S   M.S   S.M
+// .A.   .A.   .A.   .A.
+// S.S   M.M   M.S   S.M
+const CASES: [[&str; 4]; 4] = [
+    ["M", "M", "S", "S"],
+    ["M", "S", "M", "S"],
+    ["S", "M", "S", "M"],
+    ["S", "S", "M", "M"],
+];
+pub fn solve_b() {
+    let res = read_chars("d4.txt");
+    let count = res.iter().enumerate().fold(0, |acc, (i, row)| {
+        if i == 0 || i == res.len() - 1 {
+            return acc;
+        }
+
+        acc + row.iter().enumerate().fold(0, |acc, (j, _)| {
+            if j == 0 || j == row.len() - 1 {
+                return acc;
+            }
+            get_cell(&res, i, j).map_or(acc, |cell| {
+                if cell != "A" {
+                    return acc;
+                }
+                // println!("A found in {:?}", (j, i));
+
+                acc + (CASES.iter().any(|comb| check_case(&res, (j, i), *comb))) as usize
+            })
+        })
     });
     println!("{:?}", count);
 }
