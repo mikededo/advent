@@ -165,18 +165,12 @@ pub fn solve_b() {
             return acc;
         }
 
-        acc + row.iter().enumerate().fold(0, |acc, (j, _)| {
-            if j == 0 || j == row.len() - 1 {
+        acc + row.iter().enumerate().fold(0, |acc, (j, cell)| {
+            if j == 0 || j == row.len() - 1 || cell != "A" {
                 return acc;
             }
-            get_cell(&res, i, j).map_or(acc, |cell| {
-                if cell != "A" {
-                    return acc;
-                }
-                // println!("A found in {:?}", (j, i));
 
-                acc + (CASES.iter().any(|comb| check_case(&res, (j, i), *comb))) as usize
-            })
+            acc + (CASES.iter().any(|comb| check_case(&res, (j, i), *comb))) as usize
         })
     });
     println!("{:?}", count);
