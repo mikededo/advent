@@ -11,3 +11,15 @@ pub fn read_lines(path: &str) -> Vec<String> {
         .map(String::from)
         .collect()
 }
+
+pub fn read_chars(path: &str) -> Vec<Vec<String>> {
+    let path = format!(
+        "{root}/aoc-24/src/data/{path}",
+        root = env::current_dir().unwrap().display()
+    );
+    read_to_string(path)
+        .unwrap()
+        .lines()
+        .map(|l| l.chars().map(String::from).collect())
+        .collect()
+}
