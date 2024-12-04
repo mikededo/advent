@@ -1,30 +1,27 @@
 use super::helpers::read_chars;
 
-fn depth_letter(d: usize, l: &str) -> bool {
-    match d {
-        0 => l == "X",
-        1 => l == "M",
-        2 => l == "A",
-        3 => l == "S",
+fn depth_letter(depth: usize, letter: &str) -> bool {
+    match depth {
+        0 => letter == "X",
+        1 => letter == "M",
+        2 => letter == "A",
+        3 => letter == "S",
         _ => false,
     }
 }
 
-fn get_cell(m: &[Vec<String>], y: usize, x: usize) -> Result<&String, usize> {
-    let row = m.get(y);
-    if row.is_none() {
-        return Err(0);
+fn get_cell(matrix: &[Vec<String>], y: usize, x: usize) -> Result<&String, usize> {
+    match matrix.get(y) {
+        Some(row) => match row.get(x) {
+            Some(cell) => Ok(cell),
+            None => Err(0),
+        },
+        None => Err(0),
     }
-    let col = row.unwrap().get(x);
-    if col.is_none() {
-        return Err(0);
-    }
-    let cell = col.unwrap();
-    Ok(cell)
 }
 
-fn v_find(c: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, down: bool) -> usize {
-    let cell = match get_cell(c, y, x) {
+fn v_find(matrix: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, down: bool) -> usize {
+    let cell = match get_cell(matrix, y, x) {
         Ok(v) => v,
         Err(v) => return v,
     };
@@ -36,16 +33,16 @@ fn v_find(c: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, down: bool
     }
 
     if down {
-        v_find(c, (x, y + 1), depth + 1, true)
+        v_find(matrix, (x, y + 1), depth + 1, true)
     } else if y > 0 {
-        v_find(c, (x, y - 1), depth + 1, false)
+        v_find(matrix, (x, y - 1), depth + 1, false)
     } else {
         0
     }
 }
 
-fn h_find(c: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, right: bool) -> usize {
-    let cell = match get_cell(c, y, x) {
+fn h_find(matrix: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, right: bool) -> usize {
+    let cell = match get_cell(matrix, y, x) {
         Ok(v) => v,
         Err(v) => return v,
     };
@@ -57,9 +54,9 @@ fn h_find(c: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, right: boo
     }
 
     if right {
-        h_find(c, (x + 1, y), depth + 1, true)
+        h_find(matrix, (x + 1, y), depth + 1, true)
     } else if x > 0 {
-        h_find(c, (x - 1, y), depth + 1, false)
+        h_find(matrix, (x - 1, y), depth + 1, false)
     } else {
         0
     }
@@ -113,7 +110,7 @@ fn r_find(c: &Vec<Vec<String>>, (x, y): (usize, usize), depth: usize, up: bool) 
     }
 }
 
-fn count_xmask(c: &Vec<Vec<String>>, (x, y): (usize, usize)) -> usize {
+fn count_xmas(c: &Vec<Vec<String>>, (x, y): (usize, usize)) -> usize {
     h_find(c, (x, y), 0, true)
         + h_find(c, (x, y), 0, false)
         + v_find(c, (x, y), 0, true)
@@ -137,7 +134,7 @@ pub fn solve_a() {
         acc + row
             .iter()
             .enumerate()
-            .fold(0, |acc, (j, _)| acc + count_xmask(&res, (j, i)))
+            .fold(0, |acc, (j, _)| acc + count_xmas(&res, (j, i)))
     });
     println!("{:?}", count);
 }
