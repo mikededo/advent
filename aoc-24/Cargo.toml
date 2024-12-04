@@ -3,4 +3,9 @@ name = "aoc-24"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "aoc-24"
+path = "src/main.rs"
+
 [dependencies]
+regex = "1.11.1"
