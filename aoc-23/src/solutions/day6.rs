@@ -1,8 +1,8 @@
-use super::helpers::read_lines;
+use utils::read_lines;
 
 pub fn solve_a() {
     let mut games: Vec<(usize, usize)> = Vec::new();
-    for (i, l) in read_lines("day6.txt").iter().enumerate() {
+    for (i, l) in read_lines("day6.txt", 23).iter().enumerate() {
         if let Some((_, v)) = l.split_once(':') {
             v.split_ascii_whitespace()
                 .map(|s| s.parse::<usize>().unwrap())
@@ -32,7 +32,7 @@ pub fn solve_a() {
 }
 
 pub fn solve_b() {
-    let values = read_lines("day6.txt")
+    let values = read_lines("day6.txt", 23)
         .iter()
         .map(|l| {
             l.split_once(':')

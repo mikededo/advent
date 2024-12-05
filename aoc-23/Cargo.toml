@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 regex = "1.10.2"
+utils = { version = "0.1.0", path = "../utils" }

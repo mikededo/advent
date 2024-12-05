@@ -1,9 +1,6 @@
-use std::{
-    io::{stdout, Write},
-    usize::MAX,
-};
+use std::io::{stdout, Write};
 
-use super::helpers::read_lines;
+use utils::read_lines;
 
 trait AlmanacIter {
     fn next(&self, val: usize) -> usize;
@@ -63,16 +60,16 @@ impl AlmanacIter for Vec<Almanac> {
 
 fn parse_input() -> (Vec<Vec<Almanac>>, String) {
     let mut seeds: String = String::new();
-    let mut nl_count = MAX;
+    let mut nl_count = usize::MAX;
     let mut ranges: Vec<Vec<Almanac>> = vec![vec![]; 7];
 
-    for s in read_lines("day5.txt").iter() {
+    for s in read_lines("day5.txt", 23).iter() {
         if s.is_empty() {
             nl_count += 1;
             continue;
         }
 
-        if nl_count == MAX {
+        if nl_count == usize::MAX {
             nl_count = 0;
             seeds = String::from(s);
             continue;

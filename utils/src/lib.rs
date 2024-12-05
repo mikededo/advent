@@ -1,8 +1,9 @@
-use std::{env, fs::read_to_string};
+use std::env;
+use std::fs::read_to_string;
 
-pub fn read_lines(path: &str) -> Vec<String> {
+pub fn read_lines(path: &str, year: u32) -> Vec<String> {
     let path = format!(
-        "{root}/aoc-24/src/data/{path}",
+        "{root}/aoc-{year}/src/data/{path}",
         root = env::current_dir().unwrap().display()
     );
     read_to_string(path)
@@ -12,9 +13,9 @@ pub fn read_lines(path: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn read_chars(path: &str) -> Vec<Vec<String>> {
+pub fn read_chars(path: &str, year: u32) -> Vec<Vec<String>> {
     let path = format!(
-        "{root}/aoc-24/src/data/{path}",
+        "{root}/aoc-{year}/src/data/{path}",
         root = env::current_dir().unwrap().display()
     );
     read_to_string(path)

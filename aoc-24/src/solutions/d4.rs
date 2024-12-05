@@ -1,4 +1,4 @@
-use super::helpers::read_chars;
+use utils::read_chars;
 
 fn depth_letter(depth: usize, letter: &str) -> bool {
     match depth {
@@ -122,7 +122,7 @@ fn count_xmas(c: &Vec<Vec<String>>, (x, y): (usize, usize)) -> usize {
 }
 
 pub fn solve_a() {
-    let res = read_chars("d4.txt");
+    let res = read_chars("d4.txt", 24);
     let count = res.iter().enumerate().fold(0, |acc, (i, row)| {
         acc + row
             .iter()
@@ -159,7 +159,7 @@ const CASES: [[&str; 4]; 4] = [
     ["S", "S", "M", "M"],
 ];
 pub fn solve_b() {
-    let res = read_chars("d4.txt");
+    let res = read_chars("d4.txt", 24);
     let count = res.iter().enumerate().fold(0, |acc, (i, row)| {
         if i == 0 || i == res.len() - 1 {
             return acc;

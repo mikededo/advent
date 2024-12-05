@@ -1,4 +1,4 @@
-use crate::solutions::helpers::read_lines;
+use utils::read_lines;
 
 const SCALE: usize = 13;
 const MULTIPLIER: u32 = 13u32.pow(5);
@@ -52,7 +52,11 @@ impl Game {
         let mut value: u32 = 0;
         let mut joker_count: u8 = 0;
 
-        let mapper = if with_joker { map_char_to_rank_with_joker } else { map_char_to_rank };
+        let mapper = if with_joker {
+            map_char_to_rank_with_joker
+        } else {
+            map_char_to_rank
+        };
         // Use bytes to skip mapping numbers
         for rank in hand.chars().map(mapper) {
             // Using a 13 scale
@@ -60,8 +64,8 @@ impl Game {
             if with_joker && rank == 0 {
                 joker_count += 1;
             } else {
-            value += rank as u32;
-            card_count[rank as usize] += 1;
+                value += rank as u32;
+                card_count[rank as usize] += 1;
             }
         }
 
@@ -85,7 +89,7 @@ impl Game {
 }
 
 fn solve(with_joker: bool) {
-    let mut games = read_lines("day7.txt")
+    let mut games = read_lines("day7.txt", 23)
         .iter()
         .map(|s| {
             let (game, bid) = s.split_once(' ').unwrap();

@@ -1,4 +1,4 @@
-use crate::solutions::helpers::read_lines;
+use utils::read_lines;
 
 const MAX_RED: u32 = 12;
 const RED: &str = "red";

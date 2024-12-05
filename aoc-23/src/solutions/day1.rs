@@ -1,4 +1,4 @@
-use crate::solutions::helpers::read_lines;
+use utils::read_lines;
 
 fn sum_first_last(mut digits: impl Iterator<Item = u32>) -> u32 {
     let first = digits.next().unwrap();
@@ -17,7 +17,7 @@ fn find_digits(s: &str) -> u32 {
 pub fn solve_a() {
     println!(
         "{:?}",
-        read_lines("day1.txt")
+        read_lines("day1.txt", 23)
             .into_iter()
             .map(|s| find_digits(&s))
             .sum::<u32>()
@@ -30,7 +30,7 @@ pub fn solve_b() {
             "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
         ])
         .collect();
-    let result = read_lines("day1.txt")
+    let result = read_lines("day1.txt", 23)
         .into_iter()
         .map(|s| {
             let mut matches: Vec<u32> = vec![];

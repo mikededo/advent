@@ -1,4 +1,4 @@
-use super::helpers::read_lines;
+use utils::read_lines;
 
 fn find_start_points(mat: &[Vec<char>]) -> (usize, usize) {
     // Find starting points
@@ -117,7 +117,7 @@ fn points_to_edges(path: &Vec<(usize, usize)>) -> Vec<(usize, usize)> {
 
 pub fn solve_a() {
     let mut mat: Vec<Vec<char>> = Vec::new();
-    read_lines("day10.txt")
+    read_lines("day10.txt", 23)
         .iter()
         .for_each(|l| mat.push(l.chars().collect::<Vec<char>>()));
 
@@ -128,7 +128,7 @@ pub fn solve_a() {
 
 pub fn solve_b() {
     let mut mat: Vec<Vec<char>> = Vec::new();
-    read_lines("day10.txt")
+    read_lines("day10.txt", 23)
         .iter()
         .for_each(|l| mat.push(l.chars().collect::<Vec<char>>()));
 

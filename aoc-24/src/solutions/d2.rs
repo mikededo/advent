@@ -1,4 +1,4 @@
-use super::helpers::read_lines;
+use utils::read_lines;
 
 fn is_valid_range(x: i32, y: i32) -> bool {
     (1..=3).contains(&(x - y).abs())
@@ -43,7 +43,7 @@ where
 }
 
 pub fn solve_a() {
-    let count: i32 = read_lines("d2.txt")
+    let count: i32 = read_lines("d2.txt", 24)
         .iter()
         .map(|line| check(line.split(" ").map(|x| x.parse::<i32>().unwrap()), 1) as i32)
         .sum();
@@ -52,7 +52,7 @@ pub fn solve_a() {
 }
 
 pub fn solve_b() {
-    let count: i32 = read_lines("d2.txt")
+    let count: i32 = read_lines("d2.txt", 24)
         .iter()
         .map(|line| {
             let entries: Vec<i32> = line.split(" ").map(|x| x.parse::<i32>().unwrap()).collect();

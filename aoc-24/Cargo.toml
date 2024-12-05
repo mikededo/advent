@@ -9,3 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 regex = "1.11.1"
+utils = { version = "0.1.0", path = "../utils" }

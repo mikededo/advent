@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use super::helpers::read_lines;
+use utils::read_lines;
 
 pub fn is_rule_valid(graph: &HashMap<u32, HashSet<u32>>, rule: &[u32]) -> u32 {
     let empty_rules = HashSet::new();
@@ -24,7 +24,7 @@ pub fn solve_a() {
     let mut graph: HashMap<u32, HashSet<u32>> = HashMap::new();
 
     let mut res: Vec<u32> = Vec::new();
-    read_lines("d5.txt").iter().for_each(|line| {
+    read_lines("d5.txt", 24).iter().for_each(|line| {
         if line.is_empty() {
             parse_updates = true;
             return;
@@ -85,7 +85,7 @@ pub fn solve_b() {
     let mut parse_updates = false;
     let mut res = Vec::new();
 
-    for line in read_lines("d5.txt") {
+    for line in read_lines("d5.txt", 24) {
         if line.is_empty() {
             parse_updates = true;
             continue;

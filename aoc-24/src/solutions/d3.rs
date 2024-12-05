@@ -1,10 +1,10 @@
-use super::helpers::read_lines;
 use regex::Regex;
+use utils::read_lines;
 
 pub fn solve_a() {
     let mul_re = Regex::new(r"(mul\(\d+,\d+\))").unwrap();
 
-    let res: i32 = read_lines("d3.txt")
+    let res: i32 = read_lines("d3.txt", 24)
         .iter()
         .map(|line| {
             mul_re
@@ -23,7 +23,7 @@ pub fn solve_b() {
     let dont_re = Regex::new(r"don\'t\(\)").unwrap();
 
     let mut active = true;
-    let res: i32 = read_lines("d3.txt")
+    let res: i32 = read_lines("d3.txt", 24)
         .iter()
         .map(|line| {
             re.find_iter(line)

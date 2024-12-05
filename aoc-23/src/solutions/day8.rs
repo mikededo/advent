@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use regex::Regex;
-
-use super::helpers::read_lines;
+use utils::read_lines;
 
 type Graph = HashMap<String, (String, String)>;
 trait GraphIter {
@@ -41,7 +40,7 @@ fn parse_data() -> Data {
     let entry_regex: Regex =
         Regex::new(r"(?P<key>\w+) = \((?P<left>\w+), (?P<right>\w+)\)").unwrap();
 
-    let lines = read_lines("day8.txt");
+    let lines = read_lines("day8.txt", 23);
     let ins: Vec<_> = lines.first().unwrap().chars().collect();
     let mut start_points: Vec<String> = Vec::new();
 

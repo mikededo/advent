@@ -13,7 +13,7 @@ use std::collections::{HashMap, HashSet};
 
 use regex::Regex;
 
-use crate::solutions::helpers::read_lines;
+use utils::read_lines;
 
 #[derive(Debug)]
 struct Value {
@@ -52,7 +52,7 @@ fn calc_adj_pos(x: usize, y: usize, line_size: usize) -> Vec<usize> {
 pub fn solve_a() {
     let mut sym_set: HashSet<usize> = HashSet::new();
     let mut line = 0;
-    let res: Vec<Value> = read_lines("day3.txt")
+    let res: Vec<Value> = read_lines("day3.txt", 23)
         .iter()
         .flat_map(|s| {
             let num_reg = Regex::new(r"[0-9]+").unwrap();
@@ -85,7 +85,7 @@ pub fn solve_a() {
 pub fn solve_b() {
     let mut sym_set: HashMap<usize, (i32, i32)> = HashMap::new();
     let mut line = 0;
-    let res: Vec<Value> = read_lines("day3.txt")
+    let res: Vec<Value> = read_lines("day3.txt", 23)
         .iter()
         .flat_map(|s| {
             let num_reg = Regex::new(r"[0-9]+").unwrap();

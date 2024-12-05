@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::solutions::helpers::read_lines;
+use utils::read_lines;
 
 pub fn solve_a() {
-    let (mut left, mut right) = read_lines("d1.txt").iter().fold(
+    let (mut left, mut right) = read_lines("d1.txt", 24).iter().fold(
         (Vec::new(), Vec::new()),
         |(mut left, mut right), line| {
             let values = line.split("   ").collect::<Vec<&str>>();
@@ -27,7 +27,7 @@ pub fn solve_a() {
 }
 
 pub fn solve_b() {
-    let (positions, group): (Vec<i32>, HashMap<i32, i32>) = read_lines("d1.txt").iter().fold(
+    let (positions, group): (Vec<i32>, HashMap<i32, i32>) = read_lines("d1.txt", 24).iter().fold(
         (Vec::new(), HashMap::new()),
         |(mut positions, mut group), line| {
             let values = line.split("   ").collect::<Vec<&str>>();

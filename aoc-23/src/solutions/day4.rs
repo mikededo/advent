@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use super::helpers::read_lines;
+use utils::read_lines;
 
 pub fn solve_a() {
     println!(
         "{}",
-        read_lines("day4.txt")
+        read_lines("day4.txt", 23)
             .iter()
             .flat_map(|s| s.split(':').skip(1))
             .map(|s| s.split('|'))
@@ -29,7 +29,7 @@ pub fn solve_a() {
 }
 
 pub fn solve_b() {
-    let parsed: Vec<usize> = read_lines("day4.txt")
+    let parsed: Vec<usize> = read_lines("day4.txt", 23)
         .iter()
         .flat_map(|s| s.split(':').skip(1))
         .map(|s| s.split('|'))
