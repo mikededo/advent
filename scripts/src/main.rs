@@ -1,4 +1,5 @@
-use std::fs::write;
+use std::fs::{write, File, OpenOptions};
+use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 
 use chrono::Datelike;
@@ -54,6 +55,30 @@ fn get_problem_data(cookie: &str, day: u32, year: u32) -> Res {
     Ok(())
 }
 
+fn add_to_main(number: u32, year: u32) -> Res {
+    let mod_path = format!("./aoc-{year}/src/solutions/mod.rs", year = year % 100,);
+    let mod_line = format!("pub mod d{number};");
+    let mod_file = Path::new(&mod_path);
+
+    // Check if file exists
+    if mod_file.exists() {
+        let reader = BufReader::new(File::open(mod_file)?);
+        if reader.lines().any(|line| line.unwrap().trim() == mod_line) {
+            return Ok(());
+        }
+
+        // Append the line if does not exist
+        let mut file = OpenOptions::new().append(true).open(mod_file)?;
+        writeln!(file, "{mod_line}")?;
+    } else {
+        // Create the file if it does not exist
+        let mut file = File::create(mod_file)?;
+        writeln!(file, "pub mod d{number};")?;
+    }
+
+    Ok(())
+}
+
 fn new_problem(number: u32, year: u32) -> Res {
     // Write into the file
     let path = format!("./aoc-{year}/src/solutions/d{number}.rs", year = year % 100,);
@@ -66,10 +91,7 @@ fn new_problem(number: u32, year: u32) -> Res {
 use super::helpers::read_lines;
 
 pub fn solve_a() {
-    let res: i32 = read_lines("d{number}.txt")
-        .iter();
-        # TODO: Solve part
-        .sum()
+    let res = read_lines("d{number}.txt");
 
     println!("{res}");
 }
@@ -77,6 +99,9 @@ pub fn solve_a() {
     if let Some(value) = write_to_file(file_path, content) {
         return value;
     }
+
+    // Add to main.rs
+    add_to_main(number, year)?;
 
     println!("Wrote to {}", file_path.display());
     Ok(())
