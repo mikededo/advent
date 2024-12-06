@@ -8,7 +8,7 @@ const MAX_BLUE: u32 = 14;
 const BLUE: &str = "blue";
 
 pub fn solve_a() {
-    let sum = read_lines("day2.txt")
+    let sum = read_lines("day2.txt", 23)
         .into_iter()
         .map(|s| {
             s.split(": ")
@@ -36,7 +36,7 @@ pub fn solve_a() {
 }
 
 pub fn solve_b() {
-    let sum = read_lines("day2.txt").into_iter().fold(0, |acc, s| {
+    let sum = read_lines("day2.txt", 23).into_iter().fold(0, |acc, s| {
         let mut min = [0, 0, 0];
         s.split(": ").last().unwrap().split("; ").for_each(|s| {
             s.split(", ").for_each(|s| {
