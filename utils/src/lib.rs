@@ -24,3 +24,28 @@ pub fn read_chars(path: &str, year: u32) -> Vec<Vec<String>> {
         .map(|l| l.chars().map(String::from).collect())
         .collect()
 }
+
+pub fn read_chars_with<F>(path: &str, year: u32, mut callback: F) -> Vec<Vec<String>>
+where
+    F: FnMut(char, (usize, usize)),
+{
+    let path = format!(
+        "{root}/aoc-{year}/src/data/{path}",
+        root = env::current_dir().unwrap().display()
+    );
+    println!("{path}");
+    read_to_string(path)
+        .unwrap()
+        .lines()
+        .enumerate()
+        .map(|(row, line)| {
+            line.chars()
+                .enumerate()
+                .map(|(col, c)| {
+                    callback(c, (row, col));
+                    String::from(c)
+                })
+                .collect()
+        })
+        .collect()
+}
