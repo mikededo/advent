@@ -87,8 +87,7 @@ fn new_problem(number: u32, year: u32) -> Res {
         return Err(format!("File already exists: {}", file_path.display()).into());
     }
 
-    let content = r#"
-use super::helpers::read_lines;
+    let content = r#"use utils::read_lines;
 
 pub fn solve_a() {
     let res = read_lines("d{number}.txt");
