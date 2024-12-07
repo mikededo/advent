@@ -33,7 +33,6 @@ where
         "{root}/aoc-{year}/src/data/{path}",
         root = env::current_dir().unwrap().display()
     );
-    println!("{path}");
     read_to_string(path)
         .unwrap()
         .lines()
