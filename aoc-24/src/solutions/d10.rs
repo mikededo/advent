@@ -16,17 +16,17 @@ impl Trail {
     }
 
     fn add_line(&mut self, row: usize, line: &[u8]) {
-        line.iter().enumerate().for_each(|(col, height)| {
-            if col == 0 {
-                self.map.push(Vec::new());
-            }
-
-            let n = height - b'0';
-            if n == 0 {
-                self.starting_positions.push((row, col));
-            }
-            self.map[row].push(n);
-        });
+        self.map.push(
+            line.iter()
+                .map(|&height| {
+                    let n = height - b'0';
+                    if n == 0 {
+                        self.starting_positions.push((row, self.map[row].len()));
+                    }
+                    n
+                })
+                .collect(),
+        );
     }
 
     fn count_trails(&self) -> usize {
