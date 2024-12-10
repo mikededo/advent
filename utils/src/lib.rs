@@ -48,3 +48,15 @@ where
         })
         .collect()
 }
+
+pub fn read_bytes(path: &str, year: u32) -> Vec<Vec<u8>> {
+    let path = format!(
+        "{root}/aoc-{year}/src/data/{path}",
+        root = env::current_dir().unwrap().display()
+    );
+    read_to_string(path)
+        .unwrap()
+        .lines()
+        .map(|l| l.bytes().collect())
+        .collect()
+}

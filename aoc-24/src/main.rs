@@ -3,5 +3,5 @@
 mod solutions;
 
 fn main() {
-    solutions::d9::solve_b();
+    solutions::d10::solve_a();
 }
