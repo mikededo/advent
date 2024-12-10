@@ -3,13 +3,15 @@ use utils::read_bytes;
 struct Trail {
     map: Vec<Vec<u8>>,
     starting_positions: Vec<(usize, usize)>,
+    track_visited: bool,
 }
 
 impl Trail {
-    fn new() -> Self {
+    fn new(track_visited: bool) -> Self {
         Self {
             map: Vec::new(),
             starting_positions: Vec::new(),
+            track_visited,
         }
     }
 
@@ -40,7 +42,7 @@ impl Trail {
         (row, col): (usize, usize),
         depth: usize,
     ) -> usize {
-        if visited[row][col] {
+        if visited[row][col] && self.track_visited {
             return 0;
         }
 
@@ -53,7 +55,6 @@ impl Trail {
         let mut count = 0;
         if row > 0 {
             let top = self.map[row - 1][col] as usize;
-            // println!("{} top: {top}", " ".repeat(depth));
             if top == depth + 1 {
                 count += self.find_trail(visited, (row - 1, col), depth + 1);
             }
@@ -61,7 +62,6 @@ impl Trail {
         // Bottom
         if let Some(line) = self.map.get(row + 1) {
             let bottom = line[col] as usize;
-            // println!("{} bottom: {bottom}", " ".repeat(depth));
             if bottom == depth + 1 {
                 count += self.find_trail(visited, (row + 1, col), depth + 1);
             }
@@ -69,7 +69,6 @@ impl Trail {
         // Left
         if col > 0 {
             let left = self.map[row][col - 1] as usize;
-            // println!("{} left: {left}", " ".repeat(depth));
             if left == depth + 1 {
                 count += self.find_trail(visited, (row, col - 1), depth + 1);
             }
@@ -77,7 +76,6 @@ impl Trail {
         // Right
         if let Some(value) = self.map[row].get(col + 1) {
             let right = *value as usize;
-            // println!("{} right: {right}", " ".repeat(depth));
             if right == depth + 1 {
                 count += self.find_trail(visited, (row, col + 1), depth + 1);
             }
@@ -88,7 +86,17 @@ impl Trail {
 }
 
 pub fn solve_a() {
-    let mut trail = Trail::new();
+    let mut trail = Trail::new(true);
+    read_bytes("d10.txt", 24)
+        .iter()
+        .enumerate()
+        .for_each(|(row, line)| trail.add_line(row, line));
+
+    println!("{}", trail.count_trails());
+}
+
+pub fn solve_b() {
+    let mut trail = Trail::new(false);
     read_bytes("d10.txt", 24)
         .iter()
         .enumerate()
