@@ -1,6 +1,12 @@
+use core::fmt;
+use num_traits::Float;
+use std::str::FromStr;
+
 use regex::Regex;
 use utils::read_lines;
 
+// To solve the problem use linear systems
+//
 // A0*m + B0*n = P0 => m = (P0 - B0*n) / A0
 // A1*m + B1*n = P1 => m = (P1 - B1*n) / A1
 //
@@ -11,18 +17,32 @@ use utils::read_lines;
 //        => P0*A1 - P1*A0 = (B0*A1 - B1*A0)*n
 //        => (P0*A1 - P1*A0) / (B0*A1 - B1*A0) = n
 // Once found n, we substitute it in one of the previous equations
+
 fn solve(a: (f32, f32), b: (f32, f32), prize: (f32, f32)) -> (f32, f32) {
     let n = (prize.0 * a.1 - prize.1 * a.0) / (b.0 * a.1 - b.1 * a.0);
     let m = (prize.0 - b.0 * n) / a.0;
     (m, n)
 }
 
-fn parse_line(line: &str) -> (f32, f32) {
+fn solve_extra(a: (f64, f64), b: (f64, f64), rprize: (f64, f64)) -> (f64, f64) {
+    let extra = 10000000000000f64;
+    let prize = (extra + rprize.0, extra + rprize.1);
+
+    let n = (prize.0 * a.1 - prize.1 * a.0) / (b.0 * a.1 - b.1 * a.0);
+    let m = (prize.0 - b.0 * n) / a.0;
+    (m, n)
+}
+
+fn parse_line<T: Float + FromStr>(line: &str) -> (T, T)
+where
+    <T as FromStr>::Err: fmt::Debug,
+{
     let re = Regex::new(r"\d+").unwrap();
-    let nums: Vec<f32> = re
+    let nums: Vec<T> = re
         .find_iter(line)
         .map(|m| m.as_str().parse().unwrap())
         .collect();
+
     (nums[0], nums[1])
 }
 
@@ -40,6 +60,25 @@ pub fn solve_a() {
             }
         })
         .sum::<f32>();
+
+    println!("{res}");
+}
+
+pub fn solve_b() {
+    let res = read_lines("d13.txt", 24)
+        .chunks(4)
+        .filter_map(|c| {
+            // We need to use f64 as f32 overflows
+            let (m, n) = solve_extra(parse_line(&c[0]), parse_line(&c[1]), parse_line(&c[2]));
+
+            let res = m * 3f64 + n;
+            if res.fract() == 0f64 {
+                Some(res)
+            } else {
+                None
+            }
+        })
+        .sum::<f64>();
 
     println!("{res}");
 }

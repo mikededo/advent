@@ -109,6 +109,7 @@ dependencies = [
 name = "aoc-24"
 version = "0.1.0"
 dependencies = [
+ "num-traits",
  "regex",
  "utils",
 ]

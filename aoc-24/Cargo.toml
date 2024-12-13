@@ -8,5 +8,6 @@ name = "aoc-24"
 path = "src/main.rs"
 
 [dependencies]
+num-traits = "0.2.19"
 regex = "1.11.1"
 utils = { version = "0.1.0", path = "../utils" }
