@@ -1,6 +1,6 @@
 use core::fmt;
 use num_traits::Float;
-use std::str::FromStr;
+use std::{iter::Sum, str::FromStr};
 
 use regex::Regex;
 use utils::read_lines;
@@ -17,15 +17,7 @@ use utils::read_lines;
 //        => P0*A1 - P1*A0 = (B0*A1 - B1*A0)*n
 //        => (P0*A1 - P1*A0) / (B0*A1 - B1*A0) = n
 // Once found n, we substitute it in one of the previous equations
-
-fn solve(a: (f32, f32), b: (f32, f32), prize: (f32, f32)) -> (f32, f32) {
-    let n = (prize.0 * a.1 - prize.1 * a.0) / (b.0 * a.1 - b.1 * a.0);
-    let m = (prize.0 - b.0 * n) / a.0;
-    (m, n)
-}
-
-fn solve_extra(a: (f64, f64), b: (f64, f64), rprize: (f64, f64)) -> (f64, f64) {
-    let extra = 10000000000000f64;
+fn solve_equation<T: Float>(a: (T, T), b: (T, T), rprize: (T, T), extra: T) -> (T, T) {
     let prize = (extra + rprize.0, extra + rprize.1);
 
     let n = (prize.0 * a.1 - prize.1 * a.0) / (b.0 * a.1 - b.1 * a.0);
@@ -46,39 +38,35 @@ where
     (nums[0], nums[1])
 }
 
-pub fn solve_a() {
-    let res = read_lines("d13.txt", 24)
+fn solve<T: Float + Sum + FromStr>(extra: T) -> T
+where
+    <T as FromStr>::Err: fmt::Debug,
+{
+    let sum: T = read_lines("d13.txt", 24)
         .chunks(4)
         .filter_map(|c| {
-            let (m, n) = solve(parse_line(&c[0]), parse_line(&c[1]), parse_line(&c[2]));
+            let (m, n) = solve_equation(
+                parse_line(&c[0]),
+                parse_line(&c[1]),
+                parse_line(&c[2]),
+                extra,
+            );
 
-            let res = m * 3f32 + n;
-            if res.fract() == 0f32 {
+            let res = m * T::from(3).unwrap() + n;
+            if res.fract() == T::from(0).unwrap() {
                 Some(res)
             } else {
                 None
             }
         })
-        .sum::<f32>();
+        .sum();
+    sum
+}
 
-    println!("{res}");
+pub fn solve_a() {
+    println!("{}", solve(0f32));
 }
 
 pub fn solve_b() {
-    let res = read_lines("d13.txt", 24)
-        .chunks(4)
-        .filter_map(|c| {
-            // We need to use f64 as f32 overflows
-            let (m, n) = solve_extra(parse_line(&c[0]), parse_line(&c[1]), parse_line(&c[2]));
-
-            let res = m * 3f64 + n;
-            if res.fract() == 0f64 {
-                Some(res)
-            } else {
-                None
-            }
-        })
-        .sum::<f64>();
-
-    println!("{res}");
+    println!("{}", solve(10000000000000f64));
 }
