@@ -1,6 +1,6 @@
 use std::{
     collections::VecDeque,
-    fmt::{Display, Formatter, Result},
+    fmt::{Debug, Display, Formatter, Result},
     io::{self, Write},
     thread,
     time::Duration,
@@ -63,6 +63,95 @@ fn gen_n_positions(
     res.into_iter()
 }
 
+trait Playable {
+    fn add_map_line(&mut self, line: &[String]);
+    fn calc_score(&self) -> usize;
+    fn execute(&mut self, direction: &str);
+    fn print(&self);
+}
+
+struct BaseGame<T> {
+    map: Vec<Vec<T>>,
+    pos: (usize, usize),
+}
+
+impl<T: Debug + PartialEq + Eq + Clone + Copy + Display> BaseGame<T> {
+    fn new() -> Self {
+        Self {
+            map: Vec::new(),
+            pos: (0, 0),
+        }
+    }
+
+    fn print(&self) -> io::Result<()> {
+        let mut stdout = io::stdout();
+        execute!(stdout, cursor::MoveTo(0, 0), Clear(ClearType::All))?;
+
+        for (i, row) in self.map.iter().enumerate() {
+            for (j, c) in row.iter().enumerate() {
+                if self.pos == (i, j) {
+                    print!("@")
+                } else {
+                    print!("{c}");
+                }
+            }
+            println!()
+        }
+
+        stdout.flush()?;
+        Ok(())
+    }
+
+    fn is_safe(&self, (x, y): (usize, usize)) -> bool {
+        x < self.map.len() && y < self.map[0].len()
+    }
+
+    fn calc_score(&self, check: T) -> usize {
+        let mut sum = 0;
+        for i in 1..self.map.len() - 1 {
+            for j in 1..self.map[i].len() - 1 {
+                if self.map[i][j] == check {
+                    sum += i * 100 + j;
+                }
+            }
+        }
+        sum
+    }
+
+    fn player_move(&mut self, to: (usize, usize)) {
+        self.pos = to;
+    }
+
+    fn simple_move<F>(&mut self, s: &str, next: (usize, usize), empty: T, match_next: F)
+    where
+        F: Fn(T, usize) -> Option<(usize, bool)>,
+    {
+        let (moves, outcome) =
+            std::iter::successors(Some(next), |&curr| Some(get_next_pos(s, curr)))
+                .enumerate()
+                .find_map(|(moves, curr)| {
+                    if !self.is_safe(curr) {
+                        unreachable!();
+                    }
+                    match_next(self.map[curr.0][curr.1], moves)
+                })
+                .unwrap_or((0, false));
+
+        if moves > 0 && outcome {
+            for position in gen_n_positions(s, next, moves) {
+                let prev = get_prev_pos(s, position);
+                self.map[position.0][position.1] = self.map[prev.0][prev.1];
+            }
+
+            self.map[next.0][next.1] = empty;
+        }
+
+        if outcome {
+            self.pos = next;
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum CellA {
     Empty,
@@ -78,148 +167,6 @@ impl Display for CellA {
         }
     }
 }
-
-struct GameA {
-    map: Vec<Vec<CellA>>,
-    pos: (usize, usize),
-}
-
-impl GameA {
-    fn new() -> Self {
-        Self {
-            map: Vec::new(),
-            pos: (0, 0),
-        }
-    }
-
-    fn add_map_line(&mut self, line: &[String]) {
-        let mut res = Vec::new();
-        for (i, s) in line.iter().enumerate() {
-            match s.as_str() {
-                "#" => res.push(CellA::Wall),
-                "O" => res.push(CellA::Block),
-                "." => res.push(CellA::Empty),
-                "@" => {
-                    res.push(CellA::Empty);
-                    self.pos = (self.map.len(), i);
-                }
-                _ => unreachable!(),
-            }
-        }
-
-        self.map.push(res);
-    }
-
-    fn execute(&mut self, s: &str) {
-        let next = get_next_pos(s, self.pos);
-
-        // Early return if move is not safe
-        if !self.is_safe(next) {
-            return;
-        }
-
-        match self.map[next.0][next.1] {
-            CellA::Wall => (),
-            CellA::Empty => self.pos = next,
-            CellA::Block => {
-                let (moves, outcome) =
-                    std::iter::successors(Some(next), |&curr| Some(get_next_pos(s, curr)))
-                        .enumerate()
-                        .find_map(|(moves, curr)| {
-                            if !self.is_safe(curr) {
-                                unreachable!();
-                            }
-                            match self.map[curr.0][curr.1] {
-                                CellA::Wall => Some((moves, false)),
-                                CellA::Empty => Some((moves + 1, true)),
-                                CellA::Block => None,
-                            }
-                        })
-                        .unwrap_or((0, false));
-
-                if moves > 0 && outcome {
-                    for position in gen_n_positions(s, next, moves) {
-                        let prev = get_prev_pos(s, position);
-                        self.map[position.0][position.1] = self.map[prev.0][prev.1];
-                    }
-
-                    self.map[next.0][next.1] = CellA::Empty;
-                }
-
-                if outcome {
-                    self.pos = next;
-                }
-            }
-        }
-    }
-
-    fn is_safe(&self, (x, y): (usize, usize)) -> bool {
-        x < self.map.len() && y < self.map[0].len()
-    }
-
-    fn calc_score(&self) -> usize {
-        let mut sum = 0;
-        for i in 1..self.map.len() - 1 {
-            for j in 1..self.map[i].len() - 1 {
-                if self.map[i][j] == CellA::Block {
-                    sum += i * 100 + j;
-                }
-            }
-        }
-        sum
-    }
-
-    fn print(&self) -> io::Result<()> {
-        let mut stdout = io::stdout();
-
-        // Move cursor to top-left and clear screen
-        execute!(stdout, cursor::MoveTo(0, 0), Clear(ClearType::All))?;
-
-        // Print map
-        for (i, row) in self.map.iter().enumerate() {
-            for (j, c) in row.iter().enumerate() {
-                if self.pos == (i, j) {
-                    print!("@")
-                } else {
-                    print!("{c}");
-                }
-            }
-            println!()
-        }
-
-        stdout.flush()?;
-        Ok(())
-    }
-}
-
-pub fn solve_a() {
-    let mut map = true;
-    let mut game = GameA::new();
-    let visuals = false; // Change this if you want to see the map changing
-    read_chars("d15.txt", 24).iter().for_each(|l| {
-        if l.is_empty() {
-            map = false;
-            return;
-        }
-
-        if map {
-            game.add_map_line(l);
-        } else {
-            l.iter().for_each(|m| {
-                if visuals {
-                    let _ = game.print();
-                    thread::sleep(Duration::from_millis(50));
-                }
-                game.execute(m);
-            })
-        }
-    });
-
-    println!("{}", game.calc_score());
-}
-
-// Opted to create completely different structs for each
-// problem
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum CellB {
     Empty,
@@ -238,64 +185,85 @@ impl Display for CellB {
     }
 }
 
-struct GameB {
-    map: Vec<Vec<CellB>>,
-    pos: (usize, usize),
+struct GameA {
+    game: BaseGame<CellA>,
 }
 
-impl GameB {
+impl GameA {
     fn new() -> Self {
         Self {
-            map: Vec::new(),
-            pos: (0, 0),
+            game: BaseGame::new(),
         }
     }
+}
 
+impl Playable for GameA {
     fn add_map_line(&mut self, line: &[String]) {
         let mut res = Vec::new();
-        for s in line {
+        for (i, s) in line.iter().enumerate() {
             match s.as_str() {
-                "#" => res.extend([CellB::Wall, CellB::Wall]),
-                "O" => res.extend([CellB::LBlock, CellB::RBlock]),
-                "." => res.extend([CellB::Empty, CellB::Empty]),
+                "#" => res.push(CellA::Wall),
+                "O" => res.push(CellA::Block),
+                "." => res.push(CellA::Empty),
                 "@" => {
-                    res.extend([CellB::Empty, CellB::Empty]);
-                    self.pos = (self.map.len(), res.len() - 2);
+                    res.push(CellA::Empty);
+                    self.game.pos = (self.game.map.len(), i);
                 }
                 _ => unreachable!(),
             }
         }
 
-        self.map.push(res);
+        self.game.map.push(res);
+    }
+
+    fn print(&self) {
+        let _ = self.game.print();
+    }
+
+    fn calc_score(&self) -> usize {
+        self.game.calc_score(CellA::Block)
     }
 
     fn execute(&mut self, s: &str) {
-        let next = get_next_pos(s, self.pos);
-        if !self.is_safe(next) {
+        let next = get_next_pos(s, self.game.pos);
+
+        // Early return if move is not safe
+        if !self.game.is_safe(next) {
             return;
         }
 
-        // Check if free to move
-        match self.map[next.0][next.1] {
-            CellB::Wall => (),
-            CellB::Empty => self.pos = next,
-            CellB::RBlock | CellB::LBlock => {
-                // If the movement is horizonal, the previous algo applies
-                if is_move_horizontal(s) {
-                    self.horizontal_execution(s, next);
-                } else {
-                    self.vertical_execution(s, next);
-                }
+        match self.game.map[next.0][next.1] {
+            CellA::Wall => (),
+            CellA::Empty => self.game.player_move(next),
+            CellA::Block => {
+                self.game
+                    .simple_move(s, next, CellA::Empty, |cell, moves| match cell {
+                        CellA::Wall => Some((moves, false)),
+                        CellA::Empty => Some((moves + 1, true)),
+                        CellA::Block => None,
+                    });
             }
+        }
+    }
+}
+
+struct GameB {
+    game: BaseGame<CellB>,
+}
+
+impl GameB {
+    fn new() -> Self {
+        Self {
+            game: BaseGame::new(),
         }
     }
 
     // First recursive call, we use same match
     fn vertical_execution(&mut self, s: &str, next: (usize, usize)) {
-        let value = self.map[next.0][next.1];
+        let value = self.game.map[next.0][next.1];
         match value {
             CellB::Wall => (),
-            CellB::Empty => self.pos = next,
+            CellB::Empty => self.game.pos = next,
             CellB::RBlock | CellB::LBlock => {
                 // Check for the pair as well
                 let pair = match value {
@@ -304,17 +272,19 @@ impl GameB {
                     _ => unreachable!(),
                 };
 
+                // Unless all movements are possible, we do not move anything
                 if self.check_vertical(s, next) && self.check_vertical(s, pair) {
                     self.move_vertical(s, next);
-                    self.pos = next;
+                    self.game.pos = next;
                 }
             }
         }
     }
 
+    // We check if it is possible to move
     fn check_vertical(&mut self, s: &str, curr: (usize, usize)) -> bool {
         let next = get_next_pos(s, curr);
-        let value = self.map[next.0][next.1];
+        let value = self.game.map[next.0][next.1];
 
         match value {
             CellB::Wall => false,
@@ -333,7 +303,7 @@ impl GameB {
     }
 
     fn move_vertical(&mut self, s: &str, next: (usize, usize)) {
-        let value = self.map[next.0][next.1];
+        let value = self.game.map[next.0][next.1];
         match value {
             CellB::Wall => (),
             CellB::Empty => (),
@@ -349,91 +319,82 @@ impl GameB {
                 self.move_vertical(s, nnext);
                 self.move_vertical(s, npair);
 
-                self.map[nnext.0][nnext.1] = self.map[next.0][next.1];
-                self.map[npair.0][npair.1] = self.map[pair.0][pair.1];
+                self.game.map[nnext.0][nnext.1] = self.game.map[next.0][next.1];
+                self.game.map[npair.0][npair.1] = self.game.map[pair.0][pair.1];
 
-                self.map[next.0][next.1] = CellB::Empty;
-                self.map[pair.0][pair.1] = CellB::Empty;
+                self.game.map[next.0][next.1] = CellB::Empty;
+                self.game.map[pair.0][pair.1] = CellB::Empty;
             }
         }
     }
 
     fn horizontal_execution(&mut self, s: &str, next: (usize, usize)) {
-        match self.map[next.0][next.1] {
+        match self.game.map[next.0][next.1] {
             CellB::Wall => (),
-            CellB::Empty => self.pos = next,
+            CellB::Empty => self.game.pos = next,
             CellB::RBlock | CellB::LBlock => {
-                let (moves, outcome) =
-                    std::iter::successors(Some(next), |&curr| Some(get_next_pos(s, curr)))
-                        .enumerate()
-                        .find_map(|(moves, curr)| {
-                            if !self.is_safe(curr) {
-                                unreachable!();
-                            }
-                            match self.map[curr.0][curr.1] {
-                                CellB::Wall => Some((moves, false)),
-                                CellB::Empty => Some((moves + 1, true)),
-                                CellB::RBlock | CellB::LBlock => None,
-                            }
-                        })
-                        .unwrap_or((0, false));
-
-                if moves > 0 && outcome {
-                    for position in gen_n_positions(s, next, moves) {
-                        let prev = get_prev_pos(s, position);
-                        self.map[position.0][position.1] = self.map[prev.0][prev.1];
-                    }
-
-                    self.map[next.0][next.1] = CellB::Empty;
-                }
-
-                if outcome {
-                    self.pos = next;
-                }
+                self.game
+                    .simple_move(s, next, CellB::Empty, |cell, moves| match cell {
+                        CellB::Wall => Some((moves, false)),
+                        CellB::Empty => Some((moves + 1, true)),
+                        CellB::RBlock | CellB::LBlock => None,
+                    });
             }
         }
     }
+}
+impl Playable for GameB {
+    fn add_map_line(&mut self, line: &[String]) {
+        let mut res = Vec::new();
+        for s in line {
+            match s.as_str() {
+                "#" => res.extend([CellB::Wall, CellB::Wall]),
+                "O" => res.extend([CellB::LBlock, CellB::RBlock]),
+                "." => res.extend([CellB::Empty, CellB::Empty]),
+                "@" => {
+                    res.extend([CellB::Empty, CellB::Empty]);
+                    self.game.pos = (self.game.map.len(), res.len() - 2);
+                }
+                _ => unreachable!(),
+            }
+        }
 
-    fn is_safe(&self, (x, y): (usize, usize)) -> bool {
-        x < self.map.len() && y < self.map[0].len()
+        self.game.map.push(res);
     }
 
     fn calc_score(&self) -> usize {
-        let mut sum = 0;
-        for i in 1..self.map.len() - 1 {
-            for j in 1..self.map[i].len() - 1 {
-                if self.map[i][j] == CellB::LBlock {
-                    sum += i * 100 + j;
-                }
-            }
-        }
-        sum
+        self.game.calc_score(CellB::LBlock)
     }
 
-    fn print(&self) -> io::Result<()> {
-        let mut stdout = io::stdout();
-        execute!(stdout, cursor::MoveTo(0, 0), Clear(ClearType::All))?;
+    fn print(&self) {
+        let _ = self.game.print();
+    }
 
-        for (i, row) in self.map.iter().enumerate() {
-            for (j, c) in row.iter().enumerate() {
-                if self.pos == (i, j) {
-                    print!("@")
-                } else {
-                    print!("{c}");
-                }
-            }
-            println!()
+    fn execute(&mut self, s: &str) {
+        let next = get_next_pos(s, self.game.pos);
+        if !self.game.is_safe(next) {
+            return;
         }
 
-        stdout.flush()?;
-        Ok(())
+        // Check if free to move
+        match self.game.map[next.0][next.1] {
+            CellB::Wall => (),
+            CellB::Empty => self.game.pos = next,
+            CellB::RBlock | CellB::LBlock => {
+                // If the movement is horizonal, the previous algo applies
+                if is_move_horizontal(s) {
+                    self.horizontal_execution(s, next);
+                } else {
+                    self.vertical_execution(s, next);
+                }
+            }
+        }
     }
 }
 
-pub fn solve_b() {
+fn solve<T: Playable>(game: &mut T) {
     let mut map = true;
-    let mut game = GameB::new();
-    let visuals = false;
+    let visuals = false; // Change this if you want to see the map changing
     read_chars("d15.txt", 24).iter().for_each(|l| {
         if l.is_empty() {
             map = false;
@@ -445,16 +406,21 @@ pub fn solve_b() {
         } else {
             l.iter().for_each(|m| {
                 if visuals {
-                    let _ = game.print();
+                    game.print();
                     thread::sleep(Duration::from_millis(50));
                 }
                 game.execute(m);
-            });
-            if visuals {
-                let _ = game.print();
-            }
+            })
         }
     });
 
     println!("{}", game.calc_score());
+}
+
+pub fn solve_a() {
+    solve(&mut GameA::new());
+}
+
+pub fn solve_b() {
+    solve(&mut GameB::new());
 }
