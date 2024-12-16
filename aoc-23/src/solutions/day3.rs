@@ -12,7 +12,6 @@
 use std::collections::{HashMap, HashSet};
 
 use regex::Regex;
-
 use utils::read_lines;
 
 #[derive(Debug)]

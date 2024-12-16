@@ -2,6 +2,7 @@ use std::{
     collections::{HashSet, VecDeque},
     fmt::Display,
 };
+
 use utils::read_bytes;
 
 struct Garden<T: PartialEq + Copy + Display> {

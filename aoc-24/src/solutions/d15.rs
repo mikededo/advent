@@ -1,18 +1,16 @@
-use crossterm::{
-    cursor, execute,
-    terminal::{Clear, ClearType},
-};
-use std::thread;
-use std::time::Duration;
 use std::{
     collections::VecDeque,
-    fmt::{Formatter, Result},
-};
-use std::{
-    fmt::Display,
+    fmt::{Display, Formatter, Result},
     io::{self, Write},
+    thread,
+    time::Duration,
 };
 
+use crossterm::{
+    cursor,
+    execute,
+    terminal::{Clear, ClearType},
+};
 use utils::read_chars;
 
 fn is_move_horizontal(s: &str) -> bool {

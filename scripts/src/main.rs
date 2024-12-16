@@ -1,11 +1,15 @@
-use std::fs::{write, File, OpenOptions};
-use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
+use std::{
+    fs::{write, File, OpenOptions},
+    io::{BufRead, BufReader, Write},
+    path::Path,
+};
 
 use chrono::Datelike;
 use clap::{Parser, Subcommand};
-use reqwest::blocking::Client;
-use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
+use reqwest::{
+    blocking::Client,
+    header::{HeaderMap, HeaderValue, COOKIE},
+};
 
 type Res = Result<(), Box<dyn std::error::Error>>;
 

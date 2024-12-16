@@ -1,5 +1,4 @@
-use std::env;
-use std::fs::read_to_string;
+use std::{env, fs::read_to_string};
 
 pub fn read_lines(path: &str, year: u32) -> Vec<String> {
     let path = format!(

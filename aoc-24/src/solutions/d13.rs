@@ -1,7 +1,7 @@
 use core::fmt;
-use num_traits::Float;
 use std::{iter::Sum, str::FromStr};
 
+use num_traits::Float;
 use regex::Regex;
 use utils::read_lines;
 
