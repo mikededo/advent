@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use utils::read_lines;
 
 #[derive(Debug)]
@@ -35,7 +34,6 @@ struct Program {
     rc: i64,
     pointer: usize,
     instructions: Vec<i64>,
-    output: Vec<i64>,
 }
 impl Program {
     fn new(ra: i64, rb: i64, rc: i64, instructions: Vec<i64>) -> Self {
@@ -45,11 +43,12 @@ impl Program {
             rc,
             pointer: 0,
             instructions,
-            output: Vec::new(),
         }
     }
 
-    fn run(&mut self) {
+    fn run(&mut self) -> String {
+        let mut res = Vec::new();
+
         while self.pointer < self.instructions.len() {
             let (opcode, operand) = (
                 self.instructions[self.pointer],
@@ -59,9 +58,8 @@ impl Program {
             match Command::from(opcode) {
                 Command::Adv => {
                     let denom = 2u32.pow(self.operand_or_register(operand) as u32) as f64;
-                    let res = (self.ra as f64 / denom).trunc() as i64;
-
-                    self.ra = res;
+                    let result = (self.ra as f64 / denom).trunc() as i64;
+                    self.ra = result;
                 }
                 Command::Bxl => self.rb ^= operand,
                 Command::Bst => self.rb = self.operand_or_register(operand) % 8,
@@ -73,25 +71,24 @@ impl Program {
                 }
                 Command::Bxc => self.rb ^= self.rc,
                 Command::Out => {
-                    let res = self.operand_or_register(operand) % 8;
-                    self.output.push(res);
+                    res.push((self.operand_or_register(operand) % 8).to_string());
                 }
-                Command::Bdv => {
+                Command::Bdv | Command::Cdv => {
                     let denom = 2u32.pow(self.operand_or_register(operand) as u32) as f64;
-                    let res = (self.ra as f64 / denom).trunc() as i64;
+                    let result = (self.ra as f64 / denom).trunc() as i64;
 
-                    self.rb = res;
-                }
-                Command::Cdv => {
-                    let denom = 2u32.pow(self.operand_or_register(operand) as u32) as f64;
-                    let res = (self.ra as f64 / denom).trunc() as i64;
-
-                    self.rc = res;
+                    if matches!(Command::from(opcode), Command::Bdv) {
+                        self.rb = result;
+                    } else {
+                        self.rc = result;
+                    }
                 }
             }
 
             self.pointer += 2;
         }
+
+        res.join(",")
     }
 
     fn operand_or_register(&self, operand: i64) -> i64 {
@@ -105,41 +102,24 @@ impl Program {
     }
 }
 
+fn parse_reg(s: &str) -> i64 {
+    s.split(": ").last().unwrap().parse().unwrap()
+}
+
 pub fn solve_a() {
-    let ((ra, rb, rc), ins) = read_lines("d17.txt", 24).iter().enumerate().fold(
-        ((0, 0, 0), Vec::new()),
-        |agg, (i, line)| {
-            if i < 3 {
-                let s = line.split(": ").last().unwrap().parse().unwrap();
-                return match i % 3 {
-                    0 => ((s, agg.0 .1, agg.0 .2), agg.1),
-                    1 => ((agg.0 .0, s, agg.0 .2), agg.1),
-                    2 => ((agg.0 .0, agg.0 .1, s), agg.1),
-                    _ => agg,
-                };
-            } else if i == 4 {
-                let ins = line
-                    .split(": ")
-                    .last()
-                    .unwrap()
-                    .split(",")
-                    .map(|c| c.parse().unwrap())
-                    .collect::<Vec<i64>>();
-                return (agg.0, ins);
-            }
-
-            agg
-        },
+    let lines = read_lines("d17.txt", 24);
+    let mut program = Program::new(
+        parse_reg(&lines[0]),
+        parse_reg(&lines[1]),
+        parse_reg(&lines[2]),
+        lines[4]
+            .split(": ")
+            .last()
+            .unwrap()
+            .split(",")
+            .map(|c| c.parse().unwrap())
+            .collect(),
     );
 
-    let mut program = Program::new(ra, rb, rc, ins);
-    program.run();
-
-    println!(
-        "{:?}",
-        program
-            .output
-            .iter()
-            .format_with(",", |x, f| f(&x.to_string()))
-    );
+    println!("{}", program.run());
 }

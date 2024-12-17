@@ -9,7 +9,6 @@ path = "src/main.rs"
 
 [dependencies]
 crossterm = "0.28.1"
-itertools = "0.13.0"
 num-traits = "0.2.19"
 regex = "1.11.1"
 utils = { version = "0.1.0", path = "../utils" }
