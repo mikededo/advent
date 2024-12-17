@@ -147,12 +147,12 @@ impl Map {
     }
 }
 
-pub fn solve_a() {
+fn init() -> (Map, (usize, usize), (usize, usize)) {
     let mut g = Map::new();
     let mut start = (0, 0);
     let mut end = (0, 0);
 
-    let map = read_lines("d16.txt", 24);
+    let map = read_lines("16.txt", 24);
     map.iter().enumerate().for_each(|(i, row)| {
         row.chars().enumerate().for_each(|(j, c)| {
             match c {
@@ -165,26 +165,15 @@ pub fn solve_a() {
         })
     });
 
+    (g, start, end)
+}
+
+pub fn solve_a() {
+    let (g, start, end) = init();
     println!("{:?}", g.find_min_cost(start, end));
 }
 
 pub fn solve_b() {
-    let mut g = Map::new();
-    let mut start = (0, 0);
-    let mut end = (0, 0);
-
-    let map = read_lines("d16.txt", 24);
-    map.iter().enumerate().for_each(|(i, row)| {
-        row.chars().enumerate().for_each(|(j, c)| {
-            match c {
-                'S' => start = (i, j),
-                'E' => end = (i, j),
-                _ => (),
-            }
-
-            g.map_char(i, c);
-        })
-    });
-
+    let (g, start, end) = init();
     println!("{:?}", g.find_all_min(start, end));
 }
