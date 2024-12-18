@@ -44,7 +44,7 @@ impl Map {
             }
         }
 
-        unreachable!("BFS did not find a path!");
+        0
     }
 
     fn is_safe(&self, (x, y): (usize, usize)) -> bool {
@@ -54,9 +54,10 @@ impl Map {
 
 pub fn solve_a() {
     let size = 71;
+    let cut = 1024;
     let mut map = Map::new(size, size);
 
-    read_lines("d18.txt", 24)[..1024].iter().for_each(|line| {
+    read_lines("d18.txt", 24)[..cut].iter().for_each(|line| {
         let split = line
             .split(',')
             .map(|s| s.parse().unwrap())
@@ -66,4 +67,26 @@ pub fn solve_a() {
     });
 
     println!("{}", map.find_shortest((size - 1, size - 1)));
+}
+
+pub fn solve_b() {
+    let size = 71;
+    let cut = 1024;
+    let mut map = Map::new(size, size);
+
+    let found = read_lines("d18.txt", 24)
+        .into_iter()
+        .enumerate()
+        .find(|(i, line)| {
+            let split = line
+                .split(',')
+                .map(|s| s.parse().unwrap())
+                .collect::<Vec<usize>>();
+
+            map.map[split[1]][split[0]] = '#';
+
+            *i >= cut - 1 && map.find_shortest((size - 1, size - 1)) == 0
+        });
+
+    println!("{:?}", found);
 }
