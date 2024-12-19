@@ -45,3 +45,23 @@ pub fn solve_a() {
 
     println!("{:?}", res);
 }
+
+pub fn solve_b() {
+    let mut designs: HashSet<&str> = HashSet::new();
+    let mut cache = HashMap::new();
+
+    let res: usize = read_lines("d19.txt", 24)
+        .iter()
+        .enumerate()
+        .filter_map(|(i, line)| match i {
+            0 => {
+                designs.extend(line.split(", "));
+                None
+            }
+            1 => None,
+            _ => Some(compute(line, &designs, &mut cache)),
+        })
+        .sum();
+
+    println!("{:?}", res);
+}
