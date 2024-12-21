@@ -64,18 +64,18 @@ impl FromIterator<String> for Map {
 }
 
 impl Map {
-    fn find_cheats(&self) {
+    fn find_cheats_at(&self, cheats: usize, threshold: usize) {
         let min_path = self.find_shortest();
         let min_dist = min_path.get(&self.end).unwrap();
-        let mut rest = BTreeMap::new();
+        let mut rest = BTreeMap::new(); // Simply using a btree to view the groups
 
         for (point, steps) in &min_path {
-            for adj in n_adjacent(*point, 2) {
+            for adj in n_adjacent(*point, cheats) {
                 if let Some(dist) = min_path.get(&adj) {
                     // This 2 drove me mad! We need to also add the cheat!
-                    let final_dist = min_dist - dist + steps + 2;
-                    if final_dist < *min_dist && *min_dist - final_dist >= 100 {
-                        rest.entry(final_dist).and_modify(|c| *c += 1).or_insert(1);
+                    let final_dist = min_dist - dist + steps + cheats;
+                    if final_dist < *min_dist && *min_dist - final_dist >= threshold {
+                        *rest.entry(final_dist).or_insert(0) += 1;
                     }
                 }
             }
@@ -84,6 +84,27 @@ impl Map {
         println!("{:?}", rest.values().sum::<usize>());
     }
 
+    fn find_cheats_within(&self, limit: usize, threshold: isize) {
+        let min_path = self.find_shortest();
+        let mut rest = BTreeMap::new();
+
+        for (point, steps) in min_path.iter() {
+            for mpoint in self.manhattan_neighbors(*point, limit) {
+                if let Some(msteps) = min_path.get(&mpoint) {
+                    let dist = self.manhattan_distance(*point, mpoint) as isize;
+                    let saving = *msteps as isize - *steps as isize - dist;
+
+                    if saving >= threshold {
+                        *rest.entry(saving).or_insert(0) += 1;
+                    }
+                }
+            }
+        }
+
+        println!("{}", rest.iter().map(|(_, &count)| count).sum::<i32>());
+    }
+
+    // Thoday was really hard, thanks reddit :)
     fn find_shortest(&self) -> HashMap<(usize, usize), usize> {
         let mut queue = VecDeque::new();
         let mut visited = HashMap::new();
@@ -109,12 +130,55 @@ impl Map {
         unreachable!("A path should've been found");
     }
 
+    fn manhattan_distance(&self, a: (usize, usize), b: (usize, usize)) -> usize {
+        let x = if a.0 > b.0 { a.0 - b.0 } else { b.0 - a.0 };
+        let y = if a.1 > b.1 { a.1 - b.1 } else { b.1 - a.1 };
+
+        x + y
+    }
+
+    fn manhattan_neighbors(&self, point: (usize, usize), limit: usize) -> HashSet<(usize, usize)> {
+        let mut neighbors = HashSet::new();
+        let (x, y) = point;
+
+        for dx in 0..=limit {
+            for dy in 0..=(limit - dx) {
+                if dx == 0 && dy == 0 {
+                    continue;
+                }
+
+                let candidates = [
+                    (x.saturating_sub(dx), y + dy),
+                    (x + dx, y.saturating_sub(dy)),
+                    (x + dx, y + dy),
+                    (x.saturating_sub(dx), y.saturating_sub(dy)),
+                ];
+                for &(nx, ny) in &candidates {
+                    if self.in_range((nx, ny)) {
+                        neighbors.insert((nx, ny));
+                    }
+                }
+            }
+        }
+
+        neighbors
+    }
+
+    fn in_range(&self, (x, y): (usize, usize)) -> bool {
+        x < self.map.len() && y < self.map[0].len()
+    }
+
     fn is_safe(&self, (x, y): (usize, usize)) -> bool {
-        x < self.map.len() && y < self.map[0].len() && self.map[x][y] != '#'
+        self.in_range((x, y)) && self.map[x][y] != '#'
     }
 }
 
 pub fn solve_a() {
     let map = Map::from_iter(read_lines("d20.txt", 24));
-    map.find_cheats();
+    map.find_cheats_at(2, 100);
+}
+
+pub fn solve_b() {
+    let map = Map::from_iter(read_lines("d20.txt", 24));
+    map.find_cheats_within(20, 100);
 }
