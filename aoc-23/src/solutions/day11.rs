@@ -7,6 +7,7 @@ fn expanded_distance(
     p2: [usize; 2],
     empty_rows: &HashSet<usize>,
     empty_cols: &HashSet<usize>,
+    factor: usize,
 ) -> usize {
     let (r1, c1) = (p1[0], p1[1]);
     let (r2, c2) = (p2[0], p2[1]);
@@ -15,17 +16,19 @@ fn expanded_distance(
         + empty_rows
             .iter()
             .filter(|&&r| r > r1.min(r2) && r < r1.max(r2))
-            .count();
+            .count()
+            * (factor - 1).max(1);
     let col_dist = c1.abs_diff(c2)
         + empty_cols
             .iter()
             .filter(|&&c| c > c1.min(c2) && c < c1.max(c2))
-            .count();
+            .count()
+            * (factor - 1).max(1);
 
     row_dist + col_dist
 }
 
-pub fn solve_a() {
+pub fn solve(factor: usize) {
     let mut mat: Vec<Vec<char>> = Vec::new();
     let mut galaxies: Vec<[usize; 2]> = Vec::new();
 
@@ -52,9 +55,17 @@ pub fn solve_a() {
     let mut total = 0;
     for i in 0..galaxies.len() {
         for j in i + 1..galaxies.len() {
-            total += expanded_distance(galaxies[i], galaxies[j], &empty_rows, &empty_cols);
+            total += expanded_distance(galaxies[i], galaxies[j], &empty_rows, &empty_cols, factor);
         }
     }
 
     println!("{}", total);
+}
+
+pub fn solve_a() {
+    solve(1);
+}
+
+pub fn solve_b() {
+    solve(1_000_000);
 }
