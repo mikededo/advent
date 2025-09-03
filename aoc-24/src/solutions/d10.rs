@@ -18,10 +18,11 @@ impl Trail {
     fn add_line(&mut self, row: usize, line: &[u8]) {
         self.map.push(
             line.iter()
-                .map(|&height| {
+                .enumerate()
+                .map(|(col, &height)| {
                     let n = height - b'0';
                     if n == 0 {
-                        self.starting_positions.push((row, self.map[row].len()));
+                        self.starting_positions.push((row, col));
                     }
                     n
                 })
