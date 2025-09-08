@@ -30,7 +30,7 @@ struct Solver {
 }
 
 impl Solver {
-    pub fn solve(mut self) -> String {
+    pub fn solve_iterative(mut self) -> String {
         self.moves.iter().for_each(|m| {
             for _ in 0..m.count {
                 let from = m.from - 1;
@@ -42,6 +42,23 @@ impl Solver {
             }
         });
 
+        self.get_result()
+    }
+
+    pub fn solve_chunks(mut self) -> String {
+        for m in &self.moves {
+            let from = m.from - 1;
+            let to = m.to - 1;
+            let from_len = self.stacks[from].len();
+
+            let items = self.stacks[from].split_off(from_len.saturating_sub(m.count));
+            self.stacks[to].extend(items);
+        }
+
+        self.get_result()
+    }
+
+    fn get_result(self) -> String {
         self.stacks.iter().fold(String::new(), |mut acc, stack| {
             if let Some(c) = stack.last() {
                 acc.push(*c);
@@ -79,6 +96,23 @@ pub fn solve_a() {
                 .map(|line| Move::from_str(line).unwrap())
                 .collect(),
         }
-        .solve()
+        .solve_iterative()
+    );
+}
+
+pub fn solve_b() {
+    let lines = read_lines("d5.txt", 22);
+    let split_idx = lines.iter().position(|line| line.is_empty()).unwrap();
+
+    println!(
+        "{}",
+        Solver {
+            stacks: parse_stacks(&lines[..split_idx - 1]),
+            moves: lines[split_idx + 1..lines.len()]
+                .iter()
+                .map(|line| Move::from_str(line).unwrap())
+                .collect(),
+        }
+        .solve_chunks()
     );
 }
