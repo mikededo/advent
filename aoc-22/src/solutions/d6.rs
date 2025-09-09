@@ -2,17 +2,23 @@ use std::collections::HashSet;
 
 use utils::read_lines;
 
-pub fn solve_a() {
-    let sol = read_lines("d6.txt", 22)
+fn solve(n: usize) -> usize {
+    read_lines("d6.txt", 22)
         .iter()
         .map(|line| {
             line.as_bytes()
-                .windows(4)
-                .position(|win| HashSet::<&u8>::from_iter(win).len() == 4)
-                .map(|p| p + 4)
+                .windows(n)
+                .position(|win| HashSet::<&u8>::from_iter(win).len() == n)
+                .map(|p| p + n)
                 .unwrap_or(0)
         })
-        .sum::<usize>();
+        .sum()
+}
 
-    println!("{}", sol);
+pub fn solve_a() {
+    println!("{}", solve(4));
+}
+
+pub fn solve_b() {
+    println!("{}", solve(14));
 }
