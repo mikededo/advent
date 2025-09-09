@@ -6,7 +6,7 @@ use std::{
 use utils::read_bytes_with;
 
 struct Graph {
-    start: (usize, usize),
+    start: Vec<(usize, usize)>,
     end: (usize, usize),
     nodes: HashMap<(usize, usize), Vec<(usize, usize)>>,
 }
@@ -26,7 +26,7 @@ impl Graph {
         (next as i8 - curr as i8) <= 1
     }
 
-    pub fn new(map: Vec<Vec<u8>>, start: (usize, usize), end: (usize, usize)) -> Self {
+    pub fn new(map: Vec<Vec<u8>>, start: Vec<(usize, usize)>, end: (usize, usize)) -> Self {
         let mut graph = Self {
             nodes: HashMap::new(),
             start,
@@ -60,9 +60,12 @@ impl Graph {
 
     pub fn find_shortest(self) -> usize {
         let mut queue = BinaryHeap::new();
-        let mut track = HashMap::from([(self.start, 0usize)]);
+        let mut track = HashMap::new();
 
-        queue.push(Reverse((0, self.start)));
+        self.start.iter().for_each(|node| {
+            track.insert(*node, 0);
+            queue.push(Reverse((0, *node)));
+        });
 
         while let Some(Reverse((dist, node))) = queue.pop() {
             if let Some(&prev_dist) = track.get(&node) {
@@ -96,5 +99,19 @@ pub fn solve_a() {
         b'E' => end = point,
         _ => (),
     });
+    println!("{}", Graph::new(map, vec![start], end).find_shortest());
+}
+
+pub fn solve_b() {
+    let mut start = vec![];
+    let mut end = (0, 0);
+    let map = read_bytes_with("d12.txt", 22, |c, point| match c {
+        b'S' | b'a' => {
+            start.push(point);
+        }
+        b'E' => end = point,
+        _ => (),
+    });
+
     println!("{}", Graph::new(map, start, end).find_shortest());
 }
