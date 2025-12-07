@@ -119,6 +119,9 @@ dependencies = [
 [[package]]
 name = "aoc-25"
 version = "0.1.0"
+dependencies = [
+ "utils",
+]
 
 [[package]]
 name = "atomic-waker"

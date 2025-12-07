@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+
+mod solutions;
+
 fn main() {
-    println!("Hello, world!");
+    solutions::d1::solve_a();
 }
