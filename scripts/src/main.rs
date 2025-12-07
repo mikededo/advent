@@ -1,5 +1,5 @@
 use std::{
-    fs::{write, File, OpenOptions},
+    fs::{self, write, File, OpenOptions},
     io::{BufRead, BufReader, Write},
     path::Path,
 };
@@ -30,7 +30,7 @@ enum Commands {
     },
 
     Data {
-        #[arg(long, required = true)]
+        #[arg(long, required = false, default_value = "")]
         cookie: String,
         #[arg(long, value_parser = clap::value_parser!(u32))]
         day: u32,
@@ -39,16 +39,34 @@ enum Commands {
     },
 }
 
+fn read_env(key: &str) -> Option<String> {
+    let file = fs::read_to_string(".env").ok()?;
+    file.lines()
+        .find(|line| line.starts_with(key))
+        .and_then(|line| line.split('=').nth(1))
+        .map(String::from)
+}
+
 fn get_problem_data(cookie: &str, day: u32, year: u32) -> Res {
-    let client = Client::new();
+    let parsed_cookie = if cookie.is_empty() {
+        &read_env("COOKIE").unwrap_or_default()
+    } else {
+        cookie
+    };
+    if parsed_cookie.is_empty() {
+        return Err("Missing cookie variable".into());
+    }
+
     let url = format!("https://adventofcode.com/{year}/day/{day}/input",);
     let mut headers = HeaderMap::new();
-    headers.insert(COOKIE, HeaderValue::from_str(&format!("session={cookie}"))?);
+    headers.insert(
+        COOKIE,
+        HeaderValue::from_str(&format!("session={parsed_cookie}"))?,
+    );
 
-    let response = client.get(url).headers(headers).send()?;
+    let response = Client::new().get(url).headers(headers).send()?;
     if response.status().is_success() {
-        // Write into the file
-        let path = format!("./aoc-{year}/src/data/d{day}.txt", year = year % 100,);
+        let path = format!("./aoc-{year}/src/data/d{day}.txt", year = year % 100);
         let file_path = Path::new(&path);
         write(file_path, response.text()?)?;
         println!("Wrote to {}", file_path.display());

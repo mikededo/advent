@@ -51,14 +51,21 @@ cargo run -p scripts -- new 7 --year 2023
 ### Downloading input data
 
 ```bash
-cargo run -p scripts -- data --cookie <session_cookie> --day <day>
+cargo run -p scripts -- data --day <day>
 ```
 
 This fetches your puzzle input directly from adventofcode.com and saves it to
 the right spot. You'll need your session cookie from the site (grab it from your
 browser's dev tools after logging in).
 
-You can also specify the year:
+The cookie can be provided via the `COOKIE` environment variable, or in an
+`.env` file:
+
+```bash
+COOKIE=your_cookie cargo run -p scripts -- data --day 7
+```
+
+You can also pass the cookie directly with `--cookie`, or specify a different year:
 
 ```bash
 cargo run -p scripts -- data --cookie abc123 --day 7 --year 2023
